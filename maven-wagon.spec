@@ -17,7 +17,7 @@
 
 Name:           maven-%{bname}
 Version:        1.0
-Release:        %mkrel 0.1.a5.3jpp.1.1
+Release:        %mkrel 0.1.a5.3.1.2
 Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        Apache Software License
