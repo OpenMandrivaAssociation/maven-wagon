@@ -17,7 +17,7 @@
 
 Name:           maven-%{bname}
 Version:        1.0
-Release:        %mkrel 0.1.a5.3.1.2
+Release:        %mkrel 0.1.a5.3.1.3
 Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        Apache Software License
@@ -60,8 +60,6 @@ Patch14:        maven-wagon-jsch.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %if %{gcj_support}
-Requires(post): java-gcj-compat
-Requires(postun): java-gcj-compat
 BuildRequires:  java-gcj-compat-devel
 %else
 BuildArch:      noarch
