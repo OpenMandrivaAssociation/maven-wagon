@@ -17,7 +17,7 @@
 
 Name:           maven-%{bname}
 Version:        1.0
-Release:        %mkrel 0.1.a5.3.1.3
+Release:        %mkrel 0.1.a5.3.1.4
 Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        Apache Software License
@@ -65,7 +65,7 @@ BuildRequires:  java-gcj-compat-devel
 BuildArch:      noarch
 BuildRequires:  java-devel
 %endif
-BuildRequires:  jpackage-utils >= 0:1.6
+BuildRequires:  java-rpmbuild >= 0:1.6
 BuildRequires:  ant
 BuildRequires:  junit
 BuildRequires:  classworlds
