@@ -57,7 +57,6 @@ Patch13:        wagon-1.0-alpha5-provider-test-build_xml.patch
 
 Patch14:        maven-wagon-jsch.patch
 
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %if %{gcj_support}
 BuildRequires:  java-gcj-compat-devel
