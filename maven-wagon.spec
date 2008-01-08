@@ -28,6 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+%define _with_gcj_support 1
 %define gcj_support %{?_with_gcj_support:1}%{!?_with_gcj_support:%{?_without_gcj_support:0}%{!?_without_gcj_support:%{?_gcj_support:%{_gcj_support}}%{!?_gcj_support:0}}}
 
 # If you don't want to build with maven, and use straight ant instead,
@@ -47,7 +48,7 @@
 
 Name:           maven-%{bname}
 Version:        1.0
-Release:        %mkrel 0.1.b2.3.1.0
+Release:        %mkrel 0.1.b2.3.1.1
 Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        Apache Software License
