@@ -48,7 +48,7 @@
 
 Name:           maven-%{bname}
 Version:        1.0
-Release:        %mkrel 0.1.b2.3.1.1
+Release:        %mkrel 0.1.b2.3.1.2
 Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        Apache Software License
@@ -113,7 +113,9 @@ BuildRequires:  jakarta-commons-codec
 BuildRequires:  jakarta-commons-net
 BuildRequires:  jakarta-commons-httpclient
 BuildRequires:  jakarta-commons-logging
-#BuildRequires:  jakarta-slide-webdavclient
+BuildRequires:  jakarta-slide-webdavclient
+BuildRequires:  xml-im-exporter
+BuildRequires:  it-could-webdav
 BuildRequires:  jsch >= 0:0.1.26
 BuildRequires:  jtidy
 BuildRequires:  plexus-container-default
@@ -126,7 +128,7 @@ BuildRequires:  jline
 Requires:       ganymed-ssh2
 Requires:       jakarta-commons-httpclient
 Requires:       jakarta-commons-net
-#Requires:       jakarta-slide-webdavclient
+Requires:       jakarta-slide-webdavclient
 Requires:       jsch
 Requires:       jtidy
 Requires:       plexus-interactivity
@@ -146,8 +148,6 @@ following providers:
 %package javadoc
 Summary:        Javadoc for %{name}
 Group:          Development/Java
-Requires(post):   /bin/rm,/bin/ln
-Requires(postun): /bin/rm
 
 %description javadoc
 Javadoc for %{name}.
@@ -164,6 +164,7 @@ Documents for %{name}.
 
 %prep
 %setup -q -n %{bname}-%{version}-%{blevel}
+%remove_java_binaries
 cp %{SOURCE3} wagon-providers/wagon-file/build.xml
 cp %{SOURCE4} wagon-providers/wagon-ftp/build.xml
 cp %{SOURCE5} wagon-providers/wagon-http-lightweight/build.xml
@@ -202,13 +203,13 @@ cp %{SOURCE2} wagon-site/src/site/site.xml
 
 %patch0 -b .sav
 %patch1 -b .sav
-%patch2 -b .sav
+#%patch2 -b .sav
 %patch3 -b .sav
 %patch4 -b .sav
 
 %patch5 -b .sav
 %patch6 -b .sav
-%patch7 -b .sav
+#%patch7 -b .sav
 
 # To wire out jetty, plexus-avalon-personality and plexus-ftpd requirement
 rm -f wagon-providers/wagon-ftp/src/test/java/org/apache/maven/wagon/providers/ftp/FtpWagonTest.java
@@ -228,6 +229,7 @@ mvn-jpp \
         -e \
         -Dmaven.repo.local=$MAVEN_REPO_LOCAL \
         -Dmaven2.jpp.depmap.file=%{SOURCE1} \
+        -Dmaven.test.skip=true \
         -Dmaven.test.failure.ignore=true \
         install install javadoc:javadoc 
 
@@ -395,10 +397,10 @@ install -m 644 \
   wagon-providers/wagon-ssh/target/wagon-ssh-%{version}-%{blevel}.jar \
   $RPM_BUILD_ROOT%{_javadir}/%{name}/ssh-%{version}.jar
 %add_to_maven_depmap org.apache.maven.wagon wagon-ssh %{version} JPP/%{name} ssh
-#install -m 644 \
-#  wagon-providers/wagon-webdav/target/wagon-webdav-%{version}-%{blevel}.jar \
-#  $RPM_BUILD_ROOT%{_javadir}/%{name}/webdav-%{version}.jar
-#%add_to_maven_depmap org.apache.maven.wagon wagon-webdav %{version} JPP/%{name} webdav
+install -m 644 \
+  wagon-providers/wagon-webdav/target/wagon-webdav-%{version}-%{blevel}.jar \
+  $RPM_BUILD_ROOT%{_javadir}/%{name}/webdav-%{version}.jar
+%add_to_maven_depmap org.apache.maven.wagon wagon-webdav %{version} JPP/%{name} webdav
 install -m 644 \
   wagon-provider-test/target/wagon-provider-test-%{version}-%{blevel}.jar \
   $RPM_BUILD_ROOT%{_javadir}/%{name}/provider-test-%{version}.jar
@@ -436,8 +438,8 @@ install -m 644 wagon-providers/wagon-ssh-ganymed/pom.xml \
     $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP.maven-wagon-ssh-ganymed.pom
 install -m 644 wagon-providers/wagon-ssh/pom.xml \
     $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP.maven-wagon-ssh.pom
-#install -m 644 wagon-providers/wagon-webdav/pom.xml \
-#    $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP.maven-wagon-webdav.pom
+install -m 644 wagon-providers/wagon-webdav/pom.xml \
+    $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP.maven-wagon-webdav.pom
 
 # javadoc
 install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
@@ -475,8 +477,8 @@ cp -pr wagon-providers/wagon-ssh-ganymed/target/site/apidocs/* $RPM_BUILD_ROOT%{
 install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}/ssh
 cp -pr wagon-providers/wagon-ssh/target/site/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}/ssh
 
-#install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}/webdav
-#cp -pr wagon-providers/wagon-webdav/target/site/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}/ssh
+install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}/webdav
+cp -pr wagon-providers/wagon-webdav/target/site/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}/ssh
 
 install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}/provider-test
 cp -pr wagon-provider-test/target/site/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}/provider-test
