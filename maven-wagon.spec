@@ -53,6 +53,7 @@ Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        Apache Software License
 Group:          Development/Java
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 URL:            http://maven.apache.org/wagon
 Source0:        wagon-1.0-%{blevel}-src.tar.gz
 # svn export http://svn.apache.org/repos/asf/maven/wagon/tags/wagon-1.0-beta-2/
