@@ -37,7 +37,7 @@
 
 Name:           maven-%{bname}
 Version:        1.0
-Release:        0.3.b7.1
+Release:        0.3.b7.2
 Summary:        Tools to manage artifacts and deployment
 License:        ASL 2.0
 Group:          Development/Java
@@ -50,8 +50,6 @@ Source1:        wagon-1.0-jpp-depmap.xml
 #patch for 1.0 beta-6
 Patch0:         wagon-http-shared-pom_xml.patch
 Patch1:         disable-tck.patch
-
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildArch:      noarch
 BuildRequires:  jpackage-utils >= 0:1.7.2
@@ -302,4 +300,5 @@ install -d -m 755 $RPM_BUILD_ROOT%{_docdir}/%{name}-%{version}
 %files manual
 %defattr(-,root,root,-)
 %doc %{_docdir}/%{name}-%{version}
+
 
