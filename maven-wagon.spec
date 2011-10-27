@@ -37,7 +37,7 @@
 
 Name:           maven-%{bname}
 Version:        1.0
-Release:        0.3.b7.2
+Release:        0.3.b7.3
 Summary:        Tools to manage artifacts and deployment
 License:        ASL 2.0
 Group:          Development/Java
