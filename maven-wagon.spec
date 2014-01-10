@@ -3,7 +3,7 @@
 
 Name:           maven-%{bname}
 Version:        2.5
-Release:        2.0%{?dist}
+Release:        2.1%{?dist}
 Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        ASL 2.0
