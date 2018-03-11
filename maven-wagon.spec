@@ -1,9 +1,13 @@
 %{?_javapackages_macros:%_javapackages_macros}
+
+%bcond_without  scm
+%bcond_without  ssh
 %global bname     wagon
+%global split_verrel 2.6-4
 
 Name:           maven-%{bname}
-Version:        2.6
-Release:        1%{?dist}
+Version:        2.10
+Release:        3%{?dist}
 Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        ASL 2.0
@@ -15,32 +19,27 @@ Patch0:         0001-Port-to-jetty-9.patch
 BuildArch:      noarch
 
 BuildRequires:  maven-local
+%if %{with ssh}
 BuildRequires:  mvn(com.jcraft:jsch)
 BuildRequires:  mvn(com.jcraft:jsch.agentproxy.connector-factory)
 BuildRequires:  mvn(com.jcraft:jsch.agentproxy.jsch)
+%endif
 BuildRequires:  mvn(commons-io:commons-io)
 BuildRequires:  mvn(commons-lang:commons-lang)
 BuildRequires:  mvn(commons-logging:commons-logging)
 BuildRequires:  mvn(commons-net:commons-net)
-BuildRequires:  mvn(junit:junit)
 BuildRequires:  mvn(org.apache.httpcomponents:httpclient)
 BuildRequires:  mvn(org.apache.httpcomponents:httpcore)
-BuildRequires:  mvn(org.apache.maven.plugins:maven-enforcer-plugin)
+BuildRequires:  mvn(org.apache.maven:maven-parent:pom:)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-shade-plugin)
+%if %{with scm}
 BuildRequires:  mvn(org.apache.maven.scm:maven-scm-api)
-BuildRequires:  mvn(org.apache.maven.scm:maven-scm-provider-cvsexe)
-BuildRequires:  mvn(org.apache.maven.scm:maven-scm-provider-svnexe)
-BuildRequires:  mvn(org.apache.maven.scm:maven-scm-test)
-BuildRequires:  mvn(org.apache.maven:maven-parent)
-BuildRequires:  mvn(org.apache.sshd:sshd-core)
+%endif
 BuildRequires:  mvn(org.codehaus.plexus:plexus-component-metadata)
 BuildRequires:  mvn(org.codehaus.plexus:plexus-interactivity-api)
 BuildRequires:  mvn(org.codehaus.plexus:plexus-utils)
-BuildRequires:  mvn(org.easymock:easymock)
 BuildRequires:  mvn(org.jsoup:jsoup)
 BuildRequires:  mvn(org.slf4j:slf4j-api)
-BuildRequires:  mvn(org.slf4j:slf4j-log4j12)
-BuildRequires:  mvn(org.slf4j:slf4j-simple)
 
 Obsoletes:      %{name}-manual < %{epoch}:%{version}-%{release}
 Obsoletes:      %{name}-provider-test < %{epoch}:%{version}-%{release}
@@ -56,11 +55,77 @@ following providers:
 * WebDAV
 * SCM (in progress)
 
+%package provider-api
+Summary:        provider-api module for %{name}
+Obsoletes:      %{name} < %{split_verrel}
+Obsoletes:      %{name}-webdav-jackrabbit < 2.9-2
+
+%description provider-api
+provider-api module for %{name}.
+
+%package providers
+Summary:        providers module for %{name}
+
+%description providers
+providers module for %{name}
+
+%package file
+Summary:        file module for %{name}
+
+%description file
+file module for %{name}.
+
+%package ftp
+Summary:        ftp module for %{name}
+
+%description ftp
+ftp module for %{name}.
+
+%package http
+Summary:        http module for %{name}
+
+%description http
+http module for %{name}.
+
+%package http-shared
+Summary:        http-shared module for %{name}
+
+%description http-shared
+http-shared module for %{name}.
+
+%package http-lightweight
+Summary:        http-lightweight module for %{name}
+
+%description http-lightweight
+http-lightweight module for %{name}.
+
+%if %{with scm}
 %package scm
 Summary:        scm module for %{name}
 
 %description scm
 scm module for %{name}.
+%endif
+
+%if %{with ssh}
+%package ssh-external
+Summary:        ssh-external module for %{name}
+
+%description ssh-external
+ssh-external module for %{name}.
+
+%package ssh-common
+Summary:        ssh-common module for %{name}
+
+%description ssh-common
+ssh-common module for %{name}.
+
+%package ssh
+Summary:        ssh module for %{name}
+
+%description ssh
+ssh module for %{name}.
+%endif
 
 %package javadoc
 Summary:        Javadoc for %{name}
@@ -74,6 +139,7 @@ Javadoc for %{name}.
 %patch0 -p1
 
 %pom_remove_plugin :animal-sniffer-maven-plugin
+%pom_remove_plugin :maven-enforcer-plugin
 %pom_remove_dep :wagon-tck-http wagon-providers/wagon-http
 
 # correct groupId for jetty
@@ -83,18 +149,28 @@ Javadoc for %{name}.
 %pom_disable_module wagon-tcks
 %pom_disable_module wagon-ssh-common-test wagon-providers/pom.xml
 %pom_disable_module wagon-provider-test
+%pom_remove_dep :wagon-provider-test
+%pom_remove_dep :wagon-provider-test wagon-providers
 
 # missing dependencies
 %pom_disable_module wagon-webdav-jackrabbit wagon-providers
 
+%if %{without scm}
+%pom_disable_module wagon-scm wagon-providers
+%endif
+%if %{without ssh}
+%pom_disable_module wagon-ssh wagon-providers
+%pom_disable_module wagon-ssh-common wagon-providers
+%pom_disable_module wagon-ssh-external wagon-providers
+%endif
+
 %build
 %mvn_file ":wagon-{*}" %{name}/@1
 
-# scm module has a lot of dependencies
-%mvn_package ":wagon-scm" scm
+%mvn_package ":wagon"
 
 # tests are disabled because of missing dependencies
-%mvn_build -f
+%mvn_build -f -s
 
 # Maven requires Wagon HTTP with classifier "shaded"
 %mvn_alias :wagon-http :::shaded:
@@ -105,11 +181,83 @@ Javadoc for %{name}.
 
 %files -f .mfiles
 %doc LICENSE NOTICE DEPENDENCIES
-%files scm -f .mfiles-scm
+%files provider-api -f .mfiles-wagon-provider-api
+%dir %{_javadir}/%{name}
+%files providers -f .mfiles-wagon-providers
+%files file -f .mfiles-wagon-file
+%files ftp -f .mfiles-wagon-ftp
+%files http -f .mfiles-wagon-http
+%files http-shared -f .mfiles-wagon-http-shared
+%files http-lightweight -f .mfiles-wagon-http-lightweight
+%if %{with scm}
+%files scm -f .mfiles-wagon-scm
+%endif
+%if %{with ssh}
+%files ssh-external -f .mfiles-wagon-ssh-external
+%files ssh-common -f .mfiles-wagon-ssh-common
+%files ssh -f .mfiles-wagon-ssh
+%endif
+
 %files javadoc -f .mfiles-javadoc
 %doc LICENSE NOTICE DEPENDENCIES
 
 %changelog
+* Mon Feb 06 2017 Michael Simacek <msimacek@redhat.com> - 0:2.10-3
+- Add conditionals for ssh and scm
+- Remove old requires from main package
+
+* Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 0:2.10-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
+* Mon Sep 14 2015 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.10-1
+- Update to upstream version 2.10
+
+* Wed Jul 08 2015 Michael Simacek <msimacek@redhat.com> - 0:2.9-4
+- Remove unnecessary BuildRequires
+
+* Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:2.9-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
+* Tue May 12 2015 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.9-2
+- Disable webdav-jackrabbit provides
+
+* Tue Apr 21 2015 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.9-1
+- Update to upstream version 2.9
+
+* Wed Nov 12 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.8-1
+- Update to upstream version 2.8
+
+* Wed Sep 17 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.7-1
+- Update to upstream version 2.7
+
+* Thu Aug 21 2014 Michael Simacek <msimacek@redhat.com> - 0:2.6-10
+- Enable webdav-jackrabbit module
+
+* Mon Jun 30 2014 Michael Simacek <msimacek@redhat.com> - 0:2.6-9
+- Obsolete main package instead of requiring it
+
+* Fri Jun 27 2014 Michael Simacek <msimacek@redhat.com>
+- Require main package from provider-api
+- Fix maven-parent BR
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:2.6-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Wed May 28 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.6-6
+- Rebuild to regenerate Maven auto-requires
+
+* Thu Mar 06 2014 Stanislav Ochotnicky <sochotnicky@redhat.com> - 0:2.6-5
+- Use Requires: java-headless rebuild (#1067528)
+
+* Thu Feb 20 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.6-4
+- Add requires on all modules to main package
+
+* Thu Feb 20 2014 Michael Simacek <msimacek@redhat.com> - 0:2.6-3
+- Split into subpackages
+
+* Wed Feb 19 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.6-2
+- Fix unowned directory
+
 * Mon Jan  6 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:2.6-1
 - Update to upstream version 2.6
 
@@ -232,4 +380,3 @@ Javadoc for %{name}.
 
 * Mon Nov 07 2005 Ralph Apel <r.apel at r-apel.de> - 0:1.0-0.a5.1jpp
 - First JPackage build
-
