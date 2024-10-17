@@ -11,7 +11,7 @@ Release:        3%{?dist}
 Epoch:          0
 Summary:        Tools to manage artifacts and deployment
 License:        ASL 2.0
-URL:            http://maven.apache.org/wagon
+URL:            https://maven.apache.org/wagon
 Source0:        http://repo1.maven.org/maven2/org/apache/maven/wagon/wagon/%{version}/wagon-%{version}-source-release.zip
 
 Patch0:         0001-Port-to-jetty-9.patch
